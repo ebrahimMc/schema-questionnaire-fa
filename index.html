@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#245b52"><meta name="description" content="پرسش‌نامه ۷۵ سؤالی طرحواره با پاسخ‌های ۱ تا ۶ و محاسبه ۱۵ خرده‌مقیاس بر اساس راهنمای ارائه‌شده"><title>پرسش‌نامه طرحواره | YEMSQ</title><link rel="stylesheet" href="style.css"><script defer src="data.js"></script><script defer src="app.js"></script></head>
+<body>
+<header class="masthead"><a href="#" class="brand"><span class="brand-icon" aria-hidden="true">◈</span> شناخت طرحواره</a><span class="edition">پرسش‌نامه YEMSQ</span></header>
+<main>
+<section class="intro" aria-labelledby="title"><div class="eyebrow">فرصتی برای شناخت الگوهای ذهنی</div><h1 id="title">خودتان را،<br><span>کمی بهتر بشناسید.</span></h1><p class="lede">پرسش‌نامه طرحواره‌های ناسازگار اولیه یانگ</p><div class="meta"><span>۷۵ سؤال</span><span>۱۵ خرده‌مقیاس</span><span>پاسخ از ۱ تا ۶</span></div></section>
+<section class="instructions panel"><h2>پیش از شروع</h2><p>این پرسش‌نامه برای بررسی طرحواره‌های ناسازگار طراحی شده است. فهرست زیر حاوی جمله‌هاست که یک شخص ممکن است برای توصیف خودش، از آن‌ها استفاده کند. لطفاً هر جمله را با دقت بخوانید و ببینید تا چه حد توصیف درستی از شما به‌دست می‌دهد. اگر شما برای پاسخ‌دادن خاطرجمع نیستید، بر اساس آن‌چه خودتان احساس می‌کنید، پاسخ دهید، نه بر اساس آن‌چه فکر می‌کنید درست است. سپس یکی از شماره‌های ۱ تا ۶ را انتخاب کنید و در جای خالی قبل از جملات بنویسید.</p><div class="example"><strong>مثال:</strong> «من نگرانم که دیگران مرا دوست نداشته باشند.» <span>۴ = اندکی درست</span></div><div class="privacy"><span aria-hidden="true">◌</span> پاسخ‌ها فقط در مرورگر همین دستگاه نگه‌داری می‌شوند؛ به سرور ارسال نمی‌شوند.</div></section>
+<form id="questionnaire" novalidate>
+<div class="progress-wrap"><div class="progress-top"><strong>پاسخ‌های شما</strong><span id="progress-text" aria-live="polite">۰ از ۷۵</span></div><progress id="progress" value="0" max="75" aria-label="تعداد سؤال‌های پاسخ‌داده‌شده"></progress></div>
+<section class="scale" aria-label="مقیاس درجه‌بندی"><h2>مقیاس درجه‌بندی</h2><div id="scale-labels"></div></section>
+<div id="questions"></div>
+<div id="error" class="error" role="alert" hidden></div>
+<div class="submit-area"><div><h2>الگوهای پاسخ‌تان را ببینید</h2><p>پس از پاسخ به همه سؤال‌ها، نتیجه هر ۱۵ مقیاس محاسبه می‌شود.</p></div><button class="primary" type="submit">مشاهده نتیجه <span aria-hidden="true">←</span></button></div>
+</form>
+<section id="results" tabindex="-1" hidden></section>
+<footer><span>بر اساس پرسش‌نامه و راهنمای نمره‌گذاری ارائه‌شده</span><button id="reset" type="button">پاک‌کردن پاسخ‌ها و شروع دوباره</button></footer>
+</main>
+<dialog id="reset-dialog"><h2>پاسخ‌ها پاک شوند؟</h2><p>همه پاسخ‌های ذخیره‌شده در این مرورگر حذف می‌شوند.</p><div class="dialog-actions"><button id="cancel-reset">انصراف</button><button id="confirm-reset" class="primary">پاک‌کردن پاسخ‌ها</button></div></dialog>
+</body></html>

@@ -1,0 +1,37 @@
+'use strict';
+const DATA = window.TEST_DATA;
+const labels = ['کاملاً غلط','تقریباً غلط','نظری ندارم','اندکی درست','تقریباً درست','کاملاً درست'];
+const fa = n => String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const key = 'schema-yemsq-75-v1';
+let answers = Array(75).fill(null);
+try { const saved = JSON.parse(localStorage.getItem(key)); if(Array.isArray(saved)&&saved.length===75) answers=saved.map(v=>Number.isInteger(v)&&v>=1&&v<=6?v:null); } catch {}
+const $ = selector => document.querySelector(selector);
+function calculate(values) {
+  if(!Array.isArray(values)||values.length!==75||values.some(v=>!Number.isInteger(v)||v<1||v>6)) throw new Error('پاسخ به هر ۷۵ سؤال باید عددی از ۱ تا ۶ باشد.');
+  const sums = Array.from({length:15},(_,i)=>values.slice(i*5,i*5+5).reduce((a,b)=>a+b,0));
+  const max = Math.max(...sums);
+  return sums.map((sum,i)=>({index:i,sum,mean:sum/5,above:sum>15,highest:sum===max}));
+}
+window.calculateSchemas = calculate;
+$('#scale-labels').innerHTML=labels.map((s,i)=>`<div class="scale-item"><b>${fa(i+1)}</b><span>${s}</span></div>`).join('');
+$('#questions').innerHTML=Array.from({length:5},(_,block)=>`<section class="question-block" aria-label="سؤال‌های ${fa(block*15+1)} تا ${fa(block*15+15)}"><div class="block-title">سؤال‌های ${fa(block*15+1)} تا ${fa(block*15+15)}</div>${DATA.questions.slice(block*15,block*15+15).map((q,j)=>{const i=block*15+j;return `<fieldset class="question" id="q-${i+1}"><legend><span class="qnum">${fa(i+1)}.</span><span>${q}</span></legend><div class="options">${labels.map((label,k)=>`<label class="option" title="${label}"><input type="radio" name="q${i+1}" value="${k+1}" aria-label="${fa(k+1)}، ${label}" ${answers[i]===k+1?'checked':''}><span aria-hidden="true">${fa(k+1)}</span></label>`).join('')}</div></fieldset>`}).join('')}</section>`).join('');
+function updateProgress(){const count=answers.filter(v=>v!==null).length;$('#progress').value=count;$('#progress-text').textContent=`${fa(count)} از ۷۵ پاسخ داده شده`;}
+updateProgress();
+function persist(){try{localStorage.setItem(key,JSON.stringify(answers));}catch{}}
+$('#questionnaire').addEventListener('change',e=>{
+ if(e.target.type!=='radio')return;
+ const i=Number(e.target.name.slice(1))-1;answers[i]=Number(e.target.value);persist();updateProgress();$('#q-'+(i+1)).classList.remove('missing');$('#q-'+(i+1)).removeAttribute('aria-invalid');
+ if(!$('#results').hidden){$('#results').hidden=true;$('#questionnaire').hidden=false;}
+ if(!$('#error').hidden){const missing=answers.filter(v=>v===null).length;$('#error').textContent=missing?`هنوز ${fa(missing)} سؤال بی‌پاسخ است. برای دیدن نتیجه، به همه سؤال‌ها پاسخ دهید.`:'';$('#error').hidden=!missing;}
+});
+function showResults(){
+ const scores=calculate(answers), sorted=[...scores].sort((a,b)=>b.sum-a.sum||a.index-b.index);
+ const high=scores.filter(x=>x.highest), above=scores.filter(x=>x.above), allEqual=high.length===15;
+ $('#results').innerHTML=`<div class="eyebrow">نتیجه پرسش‌نامه شما</div><h2>تصویری از الگوهای شما</h2><p class="result-lead">هر نمره، میانگین پاسخ‌های یک گروه پنج‌سؤالی است؛ در بازه ۱ تا ۶.</p><div class="result-summary"><h3>${allEqual?'میانگین همه مقیاس‌ها برابر است':high.length>1?'بالاترین میانگین مشترک':'بالاترین میانگین'}</h3><p>${allEqual?'هیچ مقیاسی به‌تنهایی بالاتر نیست.':high.map(x=>DATA.names[x.index]).join('، ')}</p><small>میانگین: ${fa(high[0].mean.toFixed(2))} از ۶ · ${above.length?`${fa(above.length)} مقیاس میانگین بالاتر از ۳ دارند.`:'هیچ مقیاسی میانگین بالاتر از ۳ ندارد.'}</small></div><p class="notice">این نتیجه، نمره‌گذاری پاسخ‌های شما بر اساس راهنمای همین فایل است و تشخیص بالینی محسوب نمی‌شود.</p><div class="result-tools"><button type="button" id="edit">بازگشت و ویرایش پاسخ‌ها</button><button type="button" id="print">چاپ / ذخیره PDF نتیجه</button><button type="button" id="download">دریافت پاسخ‌ها و نتیجه</button></div><div>${sorted.map(s=>`<article class="result-row ${s.above?'above':''}"><div class="result-heading"><h3>${DATA.names[s.index]}</h3><span class="score">${fa(s.mean.toFixed(2))} <small>از ۶</small></span></div><div class="result-flags">${[s.above?'میانگین بالاتر از ۳':'میانگین ۳ یا کمتر',s.highest?(allEqual?'برابر با همه مقیاس‌ها':'بالاترین میانگین'+(high.length>1?' مشترک':'')):''].filter(Boolean).join(' · ')}</div><div class="bar" role="img" aria-label="میانگین ${fa(s.mean.toFixed(2))} از ۶"><span style="width:${s.mean/6*100}%"></span></div><details><summary>توضیح مقیاس و محاسبه</summary><p>${DATA.descriptions[s.index]}</p><p>سؤال‌های ${fa(s.index*5+1)} تا ${fa(s.index*5+5)}: ${answers.slice(s.index*5,s.index*5+5).map(fa).join(' + ')} = ${fa(s.sum)}<br>میانگین: ${fa(s.sum)} ÷ ۵ = ${fa(s.mean.toFixed(2))}</p></details></article>`).join('')}</div><details class="method"><summary>نتیجه چگونه محاسبه شد؟</summary><p>مطابق بخش «شیوه نمره‌گذاری» فایل تکمیلی، نمره هر خرده‌مقیاس از جمع پنج پاسخ مربوط به آن و تقسیم بر ۵ به‌دست می‌آید. میانگین «بالاتر از ۳» و «بالاتر از سایر مقیاس‌ها» دو ملاک ذکرشده در فایل هستند؛ این صفحه هر دو را جداگانه نشان می‌دهد. نمره دقیقاً ۳، بالاتر از ۳ محسوب نمی‌شود. در صورت تساوی، همه بالاترین میانگین‌های مشترک نمایش داده می‌شوند. هیچ سؤال یا نمره‌ای به‌صورت معکوس محاسبه نشده است.</p><p>نمودار ابتدای فایل تکمیلی، ۱۸ طرحواره معرفی می‌کند؛ پرسش‌نامه حاضر و جدول نمره‌گذاری آن، فقط ۱۵ مقیاس دارد. بنابراین برای سه طرحواره دیگر نمره‌ای تولید نمی‌شود.</p></details>`;
+ $('#results').hidden=false;$('#questionnaire').hidden=true;$('#results').focus();$('#results').scrollIntoView({block:'start'});
+ $('#edit').onclick=()=>{$('#results').hidden=true;$('#questionnaire').hidden=false;$('#q-1').scrollIntoView();$('#q-1 input:checked, #q-1 input').focus({preventScroll:true});};
+ $('#print').onclick=()=>window.print();
+ $('#download').onclick=()=>{const payload={test:'YEMSQ — نسخه ۷۵ سؤالی فایل ارائه‌شده',createdAt:new Date().toISOString(),answers:answers.map((value,i)=>({number:i+1,question:DATA.questions[i],answer:value})),results:scores.map(s=>({schema:DATA.names[s.index],sum:s.sum,mean:s.mean,aboveThree:s.above,highest:s.highest}))};const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='schema-result.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+}
+$('#questionnaire').addEventListener('submit',e=>{e.preventDefault();const missing=answers.map((v,i)=>v===null?i:-1).filter(i=>i>=0);if(missing.length){$('#error').hidden=false;$('#error').textContent=`هنوز ${fa(missing.length)} سؤال بی‌پاسخ است. برای دیدن نتیجه، به همه سؤال‌ها پاسخ دهید.`;missing.forEach(i=>{$('#q-'+(i+1)).classList.add('missing');$('#q-'+(i+1)).setAttribute('aria-invalid','true')});const first=$('#q-'+(missing[0]+1));first.scrollIntoView({block:'center'});first.querySelector('input').focus({preventScroll:true});return;}$('#error').hidden=true;showResults();});
+$('#reset').onclick=()=>$('#reset-dialog').showModal();$('#cancel-reset').onclick=()=>$('#reset-dialog').close();$('#confirm-reset').onclick=()=>{answers=Array(75).fill(null);try{localStorage.removeItem(key)}catch{};$('#questionnaire').reset();document.querySelectorAll('#questionnaire input[type=radio]').forEach(input=>{input.checked=false;input.defaultChecked=false});document.querySelectorAll('.question.missing').forEach(el=>{el.classList.remove('missing');el.removeAttribute('aria-invalid')});$('#error').hidden=true;$('#results').hidden=true;$('#questionnaire').hidden=false;updateProgress();$('#reset-dialog').close();window.scrollTo({top:0});};
